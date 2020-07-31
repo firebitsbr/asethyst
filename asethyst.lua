@@ -2,15 +2,19 @@ local dlg
 local sprite
 
 local config = {
-    version = 'v0.1.0'
+    version = 'v0.2.0',
+    api_version = 11,
 }
 
 function export_as_grid()
     local data = {}
 
+    local x_count = dlg.data.cols
+    local y_count = math.ceil(#sprite.frames / dlg.data.cols)
+
     table.insert(data, 'Grid((')
-    table.insert(data, '\ttexture_width: ' .. sprite.width .. ',')
-    table.insert(data, '\ttexture_height: ' .. sprite.height .. ',')
+    table.insert(data, '\ttexture_width: ' .. sprite.width * x_count .. ',')
+    table.insert(data, '\ttexture_height: ' .. sprite.height * y_count .. ',')
     table.insert(data, '\tcolumns: ' .. dlg.data.cols .. ',')
     table.insert(data, '\tsprite_count: ' .. #sprite.frames)
     table.insert(data, '))\n')
@@ -21,18 +25,21 @@ end
 function export_as_list()
     local data = {}
 
+    local x_count = dlg.data.cols
+    local y_count = math.ceil(#sprite.frames / dlg.data.cols)
+
     table.insert(data, 'List((')
-    table.insert(data, '\ttexture_width: ' .. sprite.width .. ',')
-    table.insert(data, '\ttexture_height: ' .. sprite.height .. ',')
+    table.insert(data, '\ttexture_width: ' .. sprite.width * x_count .. ',')
+    table.insert(data, '\ttexture_height: ' .. sprite.height * y_count .. ',')
     table.insert(data, '\tsprites: [')
 
-    for i = 0, #sprite.frames do
+    for i = 0, #sprite.frames - 1 do
         local x = i % dlg.data.cols
         local y = math.floor(i / dlg.data.cols)
 
         local s = '\t\t(\n'
-            .. '\t\t\tx: ' .. x .. ',\n'
-            .. '\t\t\ty: ' .. y .. ',\n'
+            .. '\t\t\tx: ' .. x * sprite.width .. ',\n'
+            .. '\t\t\ty: ' .. y * sprite.height .. ',\n'
             .. '\t\t\twidth: ' .. sprite.width .. ',\n'
             .. '\t\t\theight: ' .. sprite.height .. '\n'
             .. '\t\t),'
@@ -63,7 +70,7 @@ function build_dialog()
     dlg:combobox{
         id = 'ron_type',
         label = 'Sprite Type:',
-        option = 'Grid',
+        option = 'List',
         options = { 'Grid', 'List' }
     }
 
@@ -85,7 +92,48 @@ function build_dialog()
     return dlg
 end
 
+function build_error_dialog(msg, expected_value, found_value)
+    local dlg = Dialog{
+        title = 'Asethyst Exporter :( - ' .. config.version,
+    }
+
+    dlg:separator{
+        text = 'ERROR'
+    }
+
+    dlg:label{
+        label = 'Message:',
+        text = msg
+    }
+
+    dlg:label{
+        label = 'Expected Value:',
+        text = expected_value
+    }
+
+    dlg:label{
+        label = 'Found Value:',
+        text = found_value
+    }
+
+    return dlg
+end
+
 function init()
+    if app.apiVersion < config.api_version then
+        local dlg = build_error_dialog(
+            'Your Aseprite API version is out of date!',
+            config.api_version,
+            app.apiVersion
+        )
+
+        dlg:show{
+            bounds = Rectangle(300, 300, 650, 300)
+        }
+
+        return
+    end
+
     dlg = build_dialog()
 
     dlg:show()
