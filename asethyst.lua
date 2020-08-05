@@ -6,7 +6,7 @@ local config = {
    api_version = 11,
 }
 
-function export_as_grid()
+local function export_as_grid()
    local data = {}
 
    local x_count = dlg.data.cols
@@ -22,7 +22,7 @@ function export_as_grid()
    return table.concat(data, "\n")
 end
 
-function export_as_list()
+local function export_as_list()
    local data = {}
 
    local x_count = dlg.data.cols
@@ -53,7 +53,7 @@ function export_as_list()
    return table.concat(data, "\n")
 end
 
-function build_dialog()
+local function build_dialog()
    local dlg = Dialog{
       title = "Asethyst Exporter :) - " .. config.version,
    }
@@ -92,7 +92,7 @@ function build_dialog()
    return dlg
 end
 
-function build_error_dialog(msg, expected_value, found_value)
+local function build_error_dialog(msg, expected_value, found_value)
    local dlg = Dialog{
       title = "Asethyst Exporter :( - " .. config.version,
    }
@@ -119,7 +119,7 @@ function build_error_dialog(msg, expected_value, found_value)
    return dlg
 end
 
-function init()
+local function init()
    if app.apiVersion < config.api_version then
       local dlg = build_error_dialog(
          "Your Aseprite API version is out of date!",
